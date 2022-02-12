@@ -3,7 +3,7 @@
 > _Sophisticated reducers_
 
 - 🥖 Simple
-- 🥖 Automatic type inference for events
+- 🥖 Great TS support
 - 🥖 Uses [Immer](https://immerjs.github.io/immer/)
 - 🥖 Framework agnostic
 
