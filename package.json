@@ -6,6 +6,7 @@
   ],
   "main": "./dist/reduceur.umd.js",
   "module": "./dist/reduceur.es.js",
+  "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/reduceur.es.js",
