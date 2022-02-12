@@ -10,6 +10,9 @@ export default defineConfig({
       name: "reduceur",
       fileName: (format) => `reduceur.${format}.js`,
     },
+    rollupOptions: {
+      external: ["immer"],
+    },
   },
   plugins: [dts()],
 });
