@@ -1,6 +1,7 @@
 /// <reference types="vite" />
 import { defineConfig } from "vite";
 import path from "path";
+import dts from "vite-plugin-dts";
 
 export default defineConfig({
   build: {
@@ -10,4 +11,5 @@ export default defineConfig({
       fileName: (format) => `reduceur.${format}.js`,
     },
   },
+  plugins: [dts()],
 });
