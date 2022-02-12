@@ -13,9 +13,11 @@
 npm i reduceur immer
 ```
 
-## Example
+## Quick Start
 
 ```ts
+import { createReducer } from "reduceur";
+
 type State = {
   count: number;
 };
