@@ -18,7 +18,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "release": "np"
+    "release": "np",
+    "release:local": "npm run build && yalc publish"
   },
   "devDependencies": {
     "@types/node": "^17.0.17",
