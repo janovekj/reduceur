@@ -14,6 +14,19 @@ type GetEvent<EventHandlerMap extends EventHandlerMapType> = {
     : EventObject<E>;
 }[keyof EventHandlerMap];
 
+type EventCreators<EventHandlerMap extends EventHandlerMapType> = {
+  [E in keyof EventHandlerMap]: Parameters<EventHandlerMap[E]>[0] extends {}
+    ? (
+        payload: Parameters<EventHandlerMap[E]>[0]
+      ) => EventObject<E> & Parameters<EventHandlerMap[E]>[0]
+    : () => EventObject<E>;
+};
+
+interface Reduceur<State, EventHandlerMap extends EventHandlerMapType> {
+  (state: State, event: GetEvent<EventHandlerMap>): State;
+  events: EventCreators<EventHandlerMap>;
+}
+
 /**
  * Allows you to easily define fully typed reducers without resorting to large and unwieldy `switch` blocks.
  *
@@ -25,7 +38,7 @@ type GetEvent<EventHandlerMap extends EventHandlerMapType> = {
  *  count: number
  * };
  *
- * // Note the double function call. This is a workaround to allow for [partial inference](More details: https://github.com/microsoft/TypeScript/issues/26242) with TypeScript.
+ * // Note the double function call. This is a workaround to allow for "partial inference" with TypeScript.
  * createReducer<State>()(
  *   (draft) => ({
  *     incremented: () => {
@@ -39,17 +52,54 @@ type GetEvent<EventHandlerMap extends EventHandlerMapType> = {
  *     }
  *   })
  * )
+ *
+ * const initialState = { count: 0 };
+ * const nextState = counterReducer(
+ *   initialState,
+ *   // the event object is fully type-safe
+ *   { type: "changed", count: 999 }
+ * );
+ *
+ * // With React
+ * const [state, send] = useReducer(counterReducer, { count: 0 });
+ *
+ * // also fully type-safe!
+ * send({ type: "changed", count: 22 });
  * ```
+ *
+ * The returned reducer also comes with built-in event creators:
+ * ```ts
+ * const reducer = createReducer()(
+ *  () => ({
+ *    someEvent: (payload: { foo: string }) => {
+ *      // ...
+ *    }
+ *  })
+ * );
+ *
+ * send(reducer.events.someEvent({ foo: "hello" }));
+ * ```
+ *
+ * Note that these are event _creators_, which means that invoking them only _returns_ a compatible event object; it does not send any events to the reducer.
  */
 export const createReducer =
   <State>() =>
   <EventHandlerMap extends EventHandlerMapType>(
     createEventHandlerMap: (draft: Draft<State>) => EventHandlerMap
-  ) =>
-  (state: State, event: GetEvent<EventHandlerMap>) =>
-    produce(state, (draft) => {
-      const handlerMap = createEventHandlerMap(draft);
-      const { type, ...payload } = event;
-      const handler = handlerMap[event.type];
-      handler(payload);
+  ): Reduceur<State, EventHandlerMap> => {
+    const reducer = (state: State, event: GetEvent<EventHandlerMap>) =>
+      produce(state, (draft) => {
+        const handlerMap = createEventHandlerMap(draft);
+        const { type, ...payload } = event;
+        const handler = handlerMap[event.type];
+        handler(payload);
+      });
+
+    reducer.events = new Proxy({} as EventCreators<EventHandlerMap>, {
+      get: (_, prop) => {
+        return (payload: any) => ({ type: prop, ...payload });
+      },
     });
+
+    return reducer as Reduceur<State, EventHandlerMap>;
+  };

@@ -22,7 +22,7 @@ type State = {
   count: number;
 };
 
-// Note the double function call. This is a workaround to allow for partial inference.
+// Note the double function call. This is a workaround to allow for ["partial inference"](https://github.com/microsoft/TypeScript/issues/26242) with TypeScript.
 const counterReducer = createReducer<State>()((draft) => ({
   incremented: () => {
     draft.count++;
@@ -48,3 +48,17 @@ const [state, send] = useReducer(counterReducer, { count: 0 });
 // also fully type-safe!
 send({ type: "changed", count: 22 });
 ```
+
+The returned reducer also comes with built-in event creators:
+
+```ts
+const reducer = createReducer()(() => ({
+  someEvent: (payload: { foo: string }) => {
+    // ...
+  },
+}));
+
+send(reducer.events.someEvent({ foo: "hello" }));
+```
+
+Note that these are event _creators_, which means that invoking them only _returns_ a compatible event object; it does not send any events to the reducer.
