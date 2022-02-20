@@ -12,6 +12,11 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ["immer"],
+      output: {
+        globals: {
+          immer: "produce",
+        },
+      },
     },
   },
   plugins: [dts()],
