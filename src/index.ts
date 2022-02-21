@@ -2,7 +2,9 @@ import produce, { Draft } from "immer";
 
 type EventHandler = (payload?: any) => void;
 
-type EventHandlerMapType = Record<string, EventHandler>;
+type EventHandlerMapType = Record<string, EventHandler> & {
+  "*"?: EventHandler;
+};
 
 type EventObject<T> = {
   type: T;
@@ -11,19 +13,25 @@ type EventObject<T> = {
 type GetPayload<TEventHandler extends EventHandler> =
   Parameters<TEventHandler>[0];
 
-type GetEvent<EventHandlerMap extends EventHandlerMapType> = {
-  [E in keyof EventHandlerMap]: GetPayload<EventHandlerMap[E]> extends {}
-    ? EventObject<E> & GetPayload<EventHandlerMap[E]>
-    : EventObject<E>;
-}[keyof EventHandlerMap];
+type GetEvent<EventHandlerMap extends EventHandlerMapType> = Exclude<
+  {
+    [E in keyof EventHandlerMap]: GetPayload<EventHandlerMap[E]> extends {}
+      ? EventObject<E> & GetPayload<EventHandlerMap[E]>
+      : EventObject<E>;
+  }[keyof EventHandlerMap],
+  { type: "*" }
+>;
 
-type EventCreators<EventHandlerMap extends EventHandlerMapType> = {
-  [E in keyof EventHandlerMap]: GetPayload<EventHandlerMap[E]> extends {}
-    ? (
-        payload: GetPayload<EventHandlerMap[E]>
-      ) => EventObject<E> & GetPayload<EventHandlerMap[E]>
-    : () => EventObject<E>;
-};
+type EventCreators<EventHandlerMap extends EventHandlerMapType> = Omit<
+  {
+    [E in keyof EventHandlerMap]: GetPayload<EventHandlerMap[E]> extends {}
+      ? (
+          payload: GetPayload<EventHandlerMap[E]>
+        ) => EventObject<E> & GetPayload<EventHandlerMap[E]>
+      : () => EventObject<E>;
+  },
+  "*"
+>;
 
 interface Reduceur<State, EventHandlerMap extends EventHandlerMapType> {
   (state: State, event: GetEvent<EventHandlerMap>): State;
@@ -95,7 +103,12 @@ export const createReducer =
         const handlerMap = createEventHandlerMap(draft);
         const { type, ...payload } = event;
         const handler = handlerMap[event.type];
-        handler(payload);
+        if (handler) {
+          handler(payload);
+        } else {
+          const wildcardEventHandler = handlerMap["*"];
+          wildcardEventHandler?.(payload);
+        }
       });
 
     reducer.events = new Proxy({} as EventCreators<EventHandlerMap>, {
