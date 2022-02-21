@@ -8,17 +8,20 @@ type EventObject<T> = {
   type: T;
 };
 
+type GetPayload<TEventHandler extends EventHandler> =
+  Parameters<TEventHandler>[0];
+
 type GetEvent<EventHandlerMap extends EventHandlerMapType> = {
-  [E in keyof EventHandlerMap]: Parameters<EventHandlerMap[E]>[0] extends {}
-    ? EventObject<E> & Parameters<EventHandlerMap[E]>[0]
+  [E in keyof EventHandlerMap]: GetPayload<EventHandlerMap[E]> extends {}
+    ? EventObject<E> & GetPayload<EventHandlerMap[E]>
     : EventObject<E>;
 }[keyof EventHandlerMap];
 
 type EventCreators<EventHandlerMap extends EventHandlerMapType> = {
-  [E in keyof EventHandlerMap]: Parameters<EventHandlerMap[E]>[0] extends {}
+  [E in keyof EventHandlerMap]: GetPayload<EventHandlerMap[E]> extends {}
     ? (
-        payload: Parameters<EventHandlerMap[E]>[0]
-      ) => EventObject<E> & Parameters<EventHandlerMap[E]>[0]
+        payload: GetPayload<EventHandlerMap[E]>
+      ) => EventObject<E> & GetPayload<EventHandlerMap[E]>
     : () => EventObject<E>;
 };
 
