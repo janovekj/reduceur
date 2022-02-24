@@ -7,36 +7,38 @@ type EventHandler = (payload?: any) => void;
 
 type EventHandlerMapType = Record<string, EventHandler>;
 
-type EventObject<T> = {
-  type: T;
+type EventObject<EventType> = {
+  type: EventType;
 };
 
 type GetPayload<TEventHandler extends EventHandler> =
   Parameters<TEventHandler>[0];
 
 export type GetEvent<EventHandlerMap extends EventHandlerMapType> = {
-  [E in keyof EventHandlerMap]: GetPayload<EventHandlerMap[E]> extends {}
-    ? EventObject<E> & GetPayload<EventHandlerMap[E]>
-    : EventObject<E>;
+  [EventType in keyof EventHandlerMap]: GetPayload<
+    EventHandlerMap[EventType]
+  > extends {}
+    ? EventObject<EventType> & GetPayload<EventHandlerMap[EventType]>
+    : EventObject<EventType>;
 }[keyof EventHandlerMap];
 
 type EventCreators<EventHandlerMap extends EventHandlerMapType> = {
-  [E in keyof EventHandlerMap as `create${Capitalize<string & E>}`]: GetPayload<
-    EventHandlerMap[E]
-  > extends {}
+  [EventType in keyof EventHandlerMap as `create${Capitalize<
+    string & EventType
+  >}`]: GetPayload<EventHandlerMap[EventType]> extends {}
     ? (
-        payload: GetPayload<EventHandlerMap[E]>
-      ) => EventObject<E> & GetPayload<EventHandlerMap[E]>
-    : () => EventObject<E>;
+        payload: GetPayload<EventHandlerMap[EventType]>
+      ) => EventObject<EventType> & GetPayload<EventHandlerMap[EventType]>
+    : () => EventObject<EventType>;
 };
 
 export type ConnectedEventCreators<
   EventHandlerMap extends EventHandlerMapType
 > = {
-  [E in keyof EventHandlerMap as `send${Capitalize<string & E>}`]: GetPayload<
-    EventHandlerMap[E]
-  > extends {}
-    ? (payload: GetPayload<EventHandlerMap[E]>) => void
+  [EventType in keyof EventHandlerMap as `send${Capitalize<
+    string & EventType
+  >}`]: GetPayload<EventHandlerMap[EventType]> extends {}
+    ? (payload: GetPayload<EventHandlerMap[EventType]>) => void
     : () => void;
 };
 
