@@ -3,15 +3,15 @@ import produce, { Draft } from "immer";
 const uncapitalizeFirstLetter = (str: string) =>
   str.charAt(0).toLowerCase() + str.slice(1);
 
-type EventHandler = (payload?: any) => void;
+export type EventHandler = (payload?: any) => void;
 
-type EventHandlerMapType = Record<string, EventHandler>;
+export type EventHandlerMapType = Record<string, EventHandler>;
 
-type EventObject<EventType> = {
+export type EventObject<EventType> = {
   type: EventType;
 };
 
-type GetPayload<TEventHandler extends EventHandler> =
+export type GetPayload<TEventHandler extends EventHandler> =
   Parameters<TEventHandler>[0];
 
 export type GetEvent<EventHandlerMap extends EventHandlerMapType> = {
@@ -22,7 +22,7 @@ export type GetEvent<EventHandlerMap extends EventHandlerMapType> = {
     : EventObject<EventType>;
 }[keyof EventHandlerMap];
 
-type EventCreators<EventHandlerMap extends EventHandlerMapType> = {
+export type EventCreators<EventHandlerMap extends EventHandlerMapType> = {
   [EventType in keyof EventHandlerMap as `create${Capitalize<
     string & EventType
   >}`]: GetPayload<EventHandlerMap[EventType]> extends {}
@@ -47,7 +47,7 @@ type _Reduceur<State, EventHandlerMap extends EventHandlerMapType> = (
   event: GetEvent<EventHandlerMap>
 ) => State;
 
-type Sender = (event: EventObject<any>) => void;
+export type Sender = (event: EventObject<any>) => void;
 
 type Connectable<EventHandlerMap extends EventHandlerMapType> = {
   connect: (send: Sender) => ConnectedEventCreators<EventHandlerMap>;
