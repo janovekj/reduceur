@@ -47,10 +47,10 @@ type _Reduceur<State, EventHandlerMap extends EventHandlerMapType> = (
   event: GetEvent<EventHandlerMap>
 ) => State;
 
+type Sender = (event: EventObject<any>) => void;
+
 type Connectable<EventHandlerMap extends EventHandlerMapType> = {
-  connect: (
-    send: (event: EventObject<any>) => void
-  ) => ConnectedEventCreators<EventHandlerMap>;
+  connect: (send: Sender) => ConnectedEventCreators<EventHandlerMap>;
 };
 
 export type Reduceur<
