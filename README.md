@@ -40,37 +40,30 @@ const nextState = counterReducer(initialState, { type: "changed", count: 999 });
 
 ## Event Creators
 
-The reducer returned from `createReducer` also comes with built-in event creators:
+The reducer returned from `createReducer` comes with built-in event creators:
 
 ```ts
-const reducer = createReducer()(() => ({
-  someEvent: (payload: { foo: string }) => {
-    // ...
-  },
+const counterReducer = createReducer<{ count: number }>()(() => ({
+  /* ... */
+  changed: (payload: { newCount: number }) => (draft.count = payload.newCount),
 }));
 
-send(reducer.events.someEvent({ foo: "hello" }));
+const initialState = { count: 0 };
+
+const nextState = counterReducer(
+  initialState,
+  // event names are prefixed with `create`
+  reducer.createChanged({ newCount: 1000 })
+);
 ```
 
 Note that these are event _creators_, which means that invoking them only _returns_ a compatible event object; it does not send any events to the reducer.
 
-## Wildcard event handlers
+## `connect`
 
-To match the functionality of `switch` statements' `default`-block, `reduceur` supports adding a wildcard event handler, which will be used if no other event handlers are found for the event type.
+A `connect` method is available on the returned reducer, which, by providing a function with which events can be sent to your store, allows you to create an object with event _senders_.
 
-```ts
-const counterReducer = createReducer<{ count: number }>()((draft) => ({
-  increment: () => draft.count++,
-  "*": () => {
-    // unhandled event — reset the count
-    draft.count = 0;
-  },
-}));
-```
-
-## With React
-
-`reduceur` is also trivial to use with React's `useReducer`:
+A contrived example with React's `useReducer`:
 
 ```tsx
 type State = {
@@ -79,13 +72,20 @@ type State = {
 
 const counterReducer = createReducer<State>()((draft) => ({
   incremented: () => draft.count++,
+  changed: (payload: { newCount: number }) => (draft.count = payload.newCount),
 }));
 
 const Counter = () => {
   const [state, send] = useReducer(counterReducer, { count: 0 });
 
+  // event names are prefixed with `send`
+  const { sendIncremented, sendChanged } = counterReducer.connect(send);
+
   return (
-    <button onClick={() => send({ type: "incremented" })}>Increment</button>
+    <>
+      <button onClick={sendIncremented}>Increment</button>
+      <button onClick={() => sendChanged({ newCount: 100 })}>Set to 100</button>
+    </>
   );
 };
 ```
