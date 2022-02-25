@@ -8,7 +8,7 @@
 
 `reduceur` makes it hassle-free to create type-safe state reducers. No unweildy `switch`-statements and TypeScript boilerplate. Just define your event handlers and you're ready!
 
-Additionally, `reduceur` comes with [Immer](https://immerjs.github.io/immer/) `produce` API baked in, allowing you to write even more compact event handlers.
+Additionally, `reduceur` comes with [Immer's `produce` API](https://immerjs.github.io/immer/) baked in, allowing you to write even more compact event handlers.
 
 - 🥖 Simple
 - 🥖 Great TS support
