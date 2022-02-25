@@ -1,6 +1,10 @@
 # reduceur 🥖
 
-> Sophisticated reducers
+> _Sophisticated reducers_
+
+---
+
+[![npm version](http://img.shields.io/npm/v/reduceur.svg?style=flat)](https://npmjs.org/package/reduceur "View this project on npm") [![GitHub license](https://img.shields.io/github/license/janovekj/reduceur)](https://github.com/janovekj/reduceur/blob/master/LICENSE "MIT license")
 
 `reduceur` makes it hassle-free to create type-safe state reducers. No unweildy `switch`-statements and TypeScript boilerplate. Just define your event handlers and you're ready!
 
