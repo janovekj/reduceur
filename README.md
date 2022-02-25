@@ -1,6 +1,8 @@
 # reduceur 🥖
 
-> _Sophisticated reducers_
+> Sophisticated reducers
+
+`reduceur` makes it hassle-free to create type-safe state reducers. No unweildy `switch`-statements and TypeScript boilerplate. Just define your event handlers and you're ready!
 
 - 🥖 Simple
 - 🥖 Great TS support
