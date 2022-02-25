@@ -23,7 +23,7 @@ type State = {
   count: number;
 };
 
-// Note the double function call. This is a workaround to allow for ["partial inference"](https://github.com/microsoft/TypeScript/issues/26242) with TypeScript.
+// Note the double function call. This is a workaround to allow for "partial inference" with TypeScript.
 const counterReducer = createReducer<State>()((draft) => ({
   incremented: () => {
     draft.count++;
