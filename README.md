@@ -4,6 +4,8 @@
 
 `reduceur` makes it hassle-free to create type-safe state reducers. No unweildy `switch`-statements and TypeScript boilerplate. Just define your event handlers and you're ready!
 
+Additionally, `reduceur` comes with [Immer](https://immerjs.github.io/immer/) `produce` API baked in, allowing you to write even more compact event handlers.
+
 - 🥖 Simple
 - 🥖 Great TS support
 - 🥖 Uses [Immer](https://immerjs.github.io/immer/)
@@ -17,22 +19,21 @@ npm i reduceur immer
 ```
 
 ```ts
-import { createReducer } from "reduceur";
+import { createReducer, State } from "reduceur";
 
-type State = {
+type CounterState = {
   count: number;
 };
 
-// Note the double function call. This is a workaround for "partial inference" with TypeScript.
-const counterReducer = createReducer<State>()((draft) => ({
+const counterReducer = createReducer((state: State<CounterState>) => ({
   incremented: () => {
-    draft.count++;
+    state.count++;
   },
   decremented: () => {
-    draft.count--;
+    state.count--;
   },
   changed: (payload: { count: number }) => {
-    draft.count = payload.count;
+    state.count = payload.count;
   },
 }));
 
@@ -45,9 +46,14 @@ const nextState = counterReducer(initialState, { type: "changed", count: 999 });
 The reducer returned from `createReducer` comes with built-in event creators:
 
 ```ts
-const counterReducer = createReducer<{ count: number }>()(() => ({
-  /* ... */
-  changed: (payload: { newCount: number }) => (draft.count = payload.newCount),
+import { createReducer, State } from "reduceur";
+
+type CounterState = {
+  count: number;
+};
+
+const counterReducer = createReducer((state: State<CounterState>) => ({
+  changed: (payload: { newCount: number }) => (state.count = payload.newCount),
 }));
 
 const initialState = { count: 0 };
@@ -68,13 +74,11 @@ A `connect` method is available on the returned reducer, which, by providing a f
 A contrived example with React's `useReducer`:
 
 ```tsx
-type State = {
-  count: number;
-};
+import { createReducer, State } from "reduceur";
 
-const counterReducer = createReducer<State>()((draft) => ({
-  incremented: () => draft.count++,
-  changed: (payload: { newCount: number }) => (draft.count = payload.newCount),
+const counterReducer = createReducer((state: State<CounterState>) => ({
+  incremented: () => state.count++,
+  changed: (payload: { newCount: number }) => (state.count = payload.newCount),
 }));
 
 const Counter = () => {

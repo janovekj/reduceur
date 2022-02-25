@@ -1,12 +1,12 @@
 import { expect, test } from "vitest";
-import { createReducer } from ".";
+import { createReducer, State } from ".";
 
 test("it works", () => {
-  const reducer = createReducer<{ count: number }>()((draft) => ({
-    incremented: () => draft.count++,
-    decremented: () => draft.count--,
+  const reducer = createReducer((state: State<{ count: number }>) => ({
+    incremented: () => state.count++,
+    decremented: () => state.count--,
     changed: (payload: { newCount: number }) =>
-      (draft.count = payload.newCount),
+      (state.count = payload.newCount),
   }));
 
   const a = reducer({ count: 0 }, { type: "incremented" });
@@ -20,11 +20,11 @@ test("it works", () => {
 });
 
 test("event creators", () => {
-  const reducer = createReducer<{ count: number }>()((draft) => ({
-    incremented: () => draft.count++,
-    decremented: () => draft.count--,
+  const reducer = createReducer((state: State<{ count: number }>) => ({
+    incremented: () => state.count++,
+    decremented: () => state.count--,
     changed: (payload: { newCount: number }) =>
-      (draft.count = payload.newCount),
+      (state.count = payload.newCount),
   }));
 
   const a = reducer({ count: 0 }, reducer.createIncremented());
@@ -38,11 +38,11 @@ test("event creators", () => {
 });
 
 test("connect", () => {
-  const reducer = createReducer<{ count: number }>()((draft) => ({
-    incremented: () => draft.count++,
-    decremented: () => draft.count--,
+  const reducer = createReducer((state: State<{ count: number }>) => ({
+    incremented: () => state.count++,
+    decremented: () => state.count--,
     changed: (payload: { newCount: number }) =>
-      (draft.count = payload.newCount),
+      (state.count = payload.newCount),
   }));
 
   let state = { count: 0 };

@@ -3,6 +3,8 @@ import produce, { Draft } from "immer";
 const uncapitalizeFirstLetter = (str: string) =>
   str.charAt(0).toLowerCase() + str.slice(1);
 
+export type State<T extends Record<string, any>> = Draft<T>;
+
 export type EventHandler = (payload?: any) => void;
 
 export type EventHandlerMapType = Record<string, EventHandler>;
@@ -54,9 +56,9 @@ type Connectable<EventHandlerMap extends EventHandlerMapType> = {
 };
 
 export type Reduceur<
-  State,
+  TState,
   EventHandlerMap extends EventHandlerMapType
-> = _Reduceur<State, EventHandlerMap> &
+> = _Reduceur<TState, EventHandlerMap> &
   Connectable<EventHandlerMap> &
   EventCreators<EventHandlerMap>;
 
@@ -67,21 +69,20 @@ export type Reduceur<
  *
  * **Usage:**
  * ```ts
- * type State = {
+ * type CounterState = {
  *  count: number
  * };
  *
- * // Note the double function call. This is a workaround to allow for "partial inference" with TypeScript.
- * const counterReducer = createReducer<State>()(
- *   (draft) => ({
+ * const counterReducer = createReducer(
+ *   (state: State<CounterState>) => ({
  *     incremented: () => {
- *       draft.count++
+ *       state.count++
  *     },
  *     decremented: () => {
- *       draft.count--;
+ *       state.count--;
  *     },
  *     changed: (payload: { count: number }) => {
- *       draft.count = payload.count
+ *       state.count = payload.count
  *     }
  *   })
  * )
@@ -94,47 +95,34 @@ export type Reduceur<
  * );
  * ```
  */
-export const createReducer =
-  <State>() =>
-  <EventHandlerMap extends EventHandlerMapType>(
-    createEventHandlerMap: (draft: Draft<State>) => EventHandlerMap
-  ): Reduceur<State, EventHandlerMap> => {
-    // @ts-ignore
-    const reducer: Reduceur<State, EventHandlerMap> = (
-      state: State,
-      e: GetEvent<EventHandlerMap>
-    ) =>
-      produce(state, (draft) => {
-        const handlerMap = createEventHandlerMap(draft);
-        const { type, ...payload } = e;
-        const handler = handlerMap[e.type];
-        handler(payload);
-      });
+export const createReducer = <
+  TState,
+  EventHandlerMap extends EventHandlerMapType
+>(
+  createEventHandlerMap: (state: State<TState>) => EventHandlerMap
+): Reduceur<TState, EventHandlerMap> => {
+  // @ts-ignore
+  const reducer: Reduceur<State, EventHandlerMap> = (
+    state: TState,
+    e: GetEvent<EventHandlerMap>
+  ) =>
+    produce(state, (draft) => {
+      const handlerMap = createEventHandlerMap(draft);
+      const { type, ...payload } = e;
+      const handler = handlerMap[e.type];
+      handler(payload);
+    });
 
-    reducer.connect = (send) =>
-      new Proxy({} as ConnectedEventCreators<EventHandlerMap>, {
-        get: (target, prop) => {
-          if (typeof prop === "string" && prop.startsWith("send")) {
-            return (payload: any) => {
-              send({
-                ...payload,
-                type: uncapitalizeFirstLetter(prop.replace("send", "")),
-              });
-            };
-          } else {
-            // @ts-ignore
-            return target[prop];
-          }
-        },
-      });
-
-    const proxied = new Proxy(reducer, {
+  reducer.connect = (send) =>
+    new Proxy({} as ConnectedEventCreators<EventHandlerMap>, {
       get: (target, prop) => {
-        if (typeof prop === "string" && prop.startsWith("create")) {
-          return (payload: any) => ({
-            ...payload,
-            type: uncapitalizeFirstLetter(prop.replace("create", "")),
-          });
+        if (typeof prop === "string" && prop.startsWith("send")) {
+          return (payload: any) => {
+            send({
+              ...payload,
+              type: uncapitalizeFirstLetter(prop.replace("send", "")),
+            });
+          };
         } else {
           // @ts-ignore
           return target[prop];
@@ -142,5 +130,19 @@ export const createReducer =
       },
     });
 
-    return proxied;
-  };
+  const proxied = new Proxy(reducer, {
+    get: (target, prop) => {
+      if (typeof prop === "string" && prop.startsWith("create")) {
+        return (payload: any) => ({
+          ...payload,
+          type: uncapitalizeFirstLetter(prop.replace("create", "")),
+        });
+      } else {
+        // @ts-ignore
+        return target[prop];
+      }
+    },
+  });
+
+  return proxied;
+};
