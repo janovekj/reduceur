@@ -53,7 +53,7 @@ const initialState = { count: 0 };
 const nextState = counterReducer(
   initialState,
   // event names are prefixed with `create`
-  reducer.createChanged({ newCount: 1000 })
+  counterReducer.createChanged({ newCount: 1000 })
 );
 ```
 
