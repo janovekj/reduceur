@@ -56,5 +56,3 @@ test("connect", () => {
   sendChanged({ newCount: 1000 });
   expect(state.count).toBe(1000);
 });
-
-// TODO type tests
